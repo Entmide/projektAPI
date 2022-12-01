@@ -2,27 +2,23 @@ from locust import HttpUser, task
 import random
 import requests
 import json
+from time import sleep
 
 numbers = [1, 0, 3456, 311313, 455356356, 52525, 66547, 77577, 90800897]
 
 
 class WebsiteUser(HttpUser):
 
-    token = ''
-
     def on_start(self):
-        self.login()
-
-    def login(self):
-        with self.client.post("token", {
-            "username": "your_username",
-            "password": "your_password"
-        }) as response:
-            self.token = response.json().get('token')
+        ret_val = self.client.post(f"token",
+                         headers={'accept': 'application/json', 'Content-Type': 'application/x-www-form-urlencoded'},
+                         data='grant_type=&username=user1&password=123456qwerty&scope=&client_id=&client_secret='
+                         )
+        self.token = ret_val.json()
 
     @task
     def getdate(self):
-        self.client.get(url='date', headers={"Authorization": self.token})
+        self.client.get("date", headers={'accept': 'application/json', 'Authorization': f"Bearer {self.token}"})
 
     # headers = {"username": "user1", "password": "123456qwerty"
 
